@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <!--<style>#map { height: 90vh; } .log-button { position: fixed; bottom: 20px; right: 20px; }</style> -->
     
     <style> 
         #map {
@@ -43,24 +42,51 @@
             0% { background-position: 0% }
             100% { background-position: 100% }
         }
+
+        .custom-marker-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+         }
     </style>
 </head>
-<body class="d-flex h-100 text-center">
-    <h2>{{ person|capitalize }}'s Last Known Location</h2>
-    <div id="map"></div>
+<body class="d-flex h-100">
 
-    <form class="log-button" method="POST" action="{{ url_for('update_location', person=person) }}">
-        <input type="password" name="password" placeholder="Password" required />
-        <input type="hidden" name="lat" id="lat" />
-        <input type="hidden" name="lng" id="lng" />
-        <button type="submit">Log Position</button>
-    </form>
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+        <h2 class="display-5 fw-bold text-gradient">{{ person|capitalize }}'s Last Known Location</h2>
+        <div class="container py-4">
+            <div id="map"></div>
+            <form class="log-button" method="POST" action="{{ url_for('update_location', person=person) }}">
+                <input type="password" name="password" placeholder="Password" required />
+                <input type="hidden" name="lat" id="lat" />
+                <input type="hidden" name="lng" id="lng" />
+                <button type="submit">Log Position</button>
+            </form>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        const profileIcon = L.divIcon({
+            html: `<img src="/static/images/{{ person }}.png" class="custom-marker-img" alt="{{ person }}">`,
+            className: '',
+            iconSize: [48, 48],
+            iconAnchor: [24, 24]
+        });
+
         const map = L.map('map').setView([{{ lat }}, {{ lng }}], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const marker = L.marker([{{ lat }}, {{ lng }}]).addTo(map);
+        const marker = L.marker([{{ lat }}, {{ lng }}], { icon: profileIcon }).addTo(map);
+
+        L.circle([{{ lat }}, {{ lng }}], {
+            radius: 500, 
+            color: '#00ffff',
+            fillColor: '#00ffff',
+            fillOpacity: 0.2
+        }).addTo(map);
 
         navigator.geolocation.getCurrentPosition(function(pos) {
             document.getElementById("lat").value = pos.coords.latitude;

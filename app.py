@@ -23,15 +23,46 @@ def index():
         {"id": "John", "image": "John.png"},
         {"id": "Jude", "image": "Jude.png"},
         {"id": "Laoch", "image": "Laoch.png"},
-        {"id": "Peter", "image": "Peter.png"}
+        {"id": "Peter", "image": "Peter.png"},
+        {"id": "All", "image": "all.png"},
     ]
     return render_template("index.html", people=people)
+
+# @app.route("/<person>")
+# def person_page(person):
+#     locations = load_locations()
+#     loc = locations.get(person, {"lat": 0, "lng": 0})
+#     return render_template("person.html", person=person, lat=loc["lat"], lng=loc["lng"])
 
 @app.route("/<person>")
 def person_page(person):
     locations = load_locations()
-    loc = locations.get(person, {"lat": 0, "lng": 0})
-    return render_template("person.html", person=person, lat=loc["lat"], lng=loc["lng"])
+
+    if person == "All":
+        people = [
+            {"id": "Ben", "image": "Ben.png"},
+            {"id": "John", "image": "John.png"},
+            {"id": "Jude", "image": "Jude.png"},
+            {"id": "Laoch", "image": "Laoch.png"},
+            {"id": "Peter", "image": "Peter.png"},
+        ]
+        # Only include people with known locations
+        locs = []
+        for p in people:
+            loc = locations.get(p["id"])
+            if loc:
+                locs.append({
+                    "id": p["id"],
+                    "image": p["image"],
+                    "lat": loc["lat"],
+                    "lng": loc["lng"]
+                })
+        return render_template("all.html", people=locs)
+    else:
+        loc = locations.get(person, {"lat": 0, "lng": 0})
+        return render_template("person.html", person=person, lat=loc["lat"], lng=loc["lng"])
+
+
 
 @app.route("/update/<person>", methods=["POST"])
 def update_location(person):
